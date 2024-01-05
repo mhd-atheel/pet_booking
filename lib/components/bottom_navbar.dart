@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pet_booking/screens/home_screen.dart';
 import 'package:pet_booking/screens/profile_screen.dart';
+import 'package:pet_booking/screens/request_screen.dart';
 
 import '../screens/create_pet_post.dart';
 
@@ -32,9 +33,8 @@ class _BottomNavbarState extends State<BottomNavbar> {
 
         HomeScreen(),
         CreatePetPost(),
-        ProfileScreen()
-
-
+        RequestScreen(),
+        ProfileScreen(),
       ],
     );
   }
@@ -65,6 +65,11 @@ class _BottomNavbarState extends State<BottomNavbar> {
             icon:FaIcon(FontAwesomeIcons.plus),
             label: 'Create',
             activeIcon:FaIcon(FontAwesomeIcons.plus,color: Colors.orange,)
+        ),
+        BottomNavigationBarItem(
+            icon:FaIcon(FontAwesomeIcons.listCheck),
+            label: 'Requests',
+            activeIcon:FaIcon(FontAwesomeIcons.listCheck,color: Colors.orange,)
         ),
         BottomNavigationBarItem(
             icon:FaIcon(FontAwesomeIcons.solidUser),

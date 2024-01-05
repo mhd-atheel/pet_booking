@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "135873728619",
+    "project_id": "pet-booking-36c3a",
+    "storage_bucket": "pet-booking-36c3a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135873728619:android:18ab75c7ed87c536d8612e",
+        "android_client_info": {
+          "package_name": "com.example.pet_booking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJGXPapFuMkYq-qFX0U4ZPahofEEUUh2U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
