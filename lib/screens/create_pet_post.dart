@@ -24,9 +24,15 @@ class _CreatePetPostState extends State<CreatePetPost> {
   List<String> list = ['Male', 'Female',];
   String dropdownValue = "Male";
 
+  CollectionReference posts = FirebaseFirestore.instance.collection('posts');
+
   //  TextEditingController
-  final descriptionController = TextEditingController();
   final nameController = TextEditingController();
+  final ageController = TextEditingController();
+  final breedController = TextEditingController();
+  final colorController = TextEditingController();
+
+  final descriptionController = TextEditingController();
 
 
 
@@ -44,8 +50,23 @@ class _CreatePetPostState extends State<CreatePetPost> {
   }
 
   createPost (){
-
+    posts.add({
+      'name': nameController.text,
+      'age': ageController.text,
+      'breed': breedController.text,
+      'color': colorController.text,
+      'description': descriptionController.text,
+      'sex':dropdownValue,
+      'createdAt':Timestamp.now().toDate(),
+      'userId':FirebaseAuth.instance.currentUser!.uid,
+      'image': "this image url is temporary null",
+    }).then((value) => {
+         print("post created successfully")
+    });
   }
+
+
+
   Future uploadImage() async {
     final  posttime = DateTime.now().millisecondsSinceEpoch.toString();
     Reference ref = FirebaseStorage.instance.ref().child('posts').child(posttime);
@@ -139,6 +160,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
       appBar: AppBar(
         title: Text("Create post".toUpperCase()),
         centerTitle: true,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -151,7 +173,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 ],
               ),
             ),
-            Image.asset('assets/images/image1.png'),
+            //Image.asset('assets/images/image1.png'),
             Padding(
               padding: const EdgeInsets.only(left: 15.0, top: 5, right: 15),
               child: Container(
@@ -165,6 +187,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20, top: 0),
                   child: TextFormField(
+                    controller: nameController,
                       decoration: const InputDecoration(
                     hintText: 'your pet name',
                     labelStyle: TextStyle(color: Colors.grey),
@@ -195,6 +218,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                   padding: const EdgeInsets.only(left: 20, top: 0),
                   child: TextFormField(
                       keyboardType: TextInputType.number,
+                      controller: ageController,
                       decoration: InputDecoration(
                         hintText: 'your pet age',
                         labelStyle: TextStyle(color: Colors.grey.shade50),
@@ -224,6 +248,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20, top: 0),
                   child: TextFormField(
+                    controller: breedController,
                       decoration: InputDecoration(
                     hintText: 'your pet breed',
                     labelStyle: TextStyle(color: Colors.grey.shade50),
@@ -253,6 +278,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20, top: 0),
                   child: TextFormField(
+                      controller: colorController,
                       decoration: InputDecoration(
                         hintText: 'your pet color',
                         labelStyle: TextStyle(color: Colors.grey.shade50),
@@ -419,6 +445,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
             GestureDetector(
               onTap: (){
                 uploadImage();
+                //createPost();
               },
               child: Padding(
                 padding: const EdgeInsets.only(left: 15, right: 15,top: 15),

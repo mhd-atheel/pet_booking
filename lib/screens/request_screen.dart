@@ -10,6 +10,7 @@ class RequestScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Requests".toUpperCase()),
         centerTitle: true,
+        automaticallyImplyLeading: false,
       ),
       body:  SingleChildScrollView(
         child: Column(
