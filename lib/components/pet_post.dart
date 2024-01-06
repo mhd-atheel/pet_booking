@@ -9,10 +9,7 @@ class PetPost extends StatelessWidget {
   Widget build(BuildContext context) {
     return  GestureDetector(
       onTap: (){
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const DetailScreen()),
-        );
+
       },
       child: Container(
         decoration: BoxDecoration(
@@ -52,10 +49,10 @@ class PetPost extends StatelessWidget {
 
             ),
             CachedNetworkImage(
-              imageUrl:"https://firebasestorage.googleapis.com/v0/b/blogee-2f337.appspot.com/o/postImages%2Fimages.jpeg?alt=media&token=e5d63ca9-20c3-4056-994b-f396c493d96d",
+              imageUrl:"https://firebasestorage.googleapis.com/v0/b/pet-booking-36c3a.appspot.com/o/posts%2F1704570086968.png?alt=media&token=7492c9b9-cc6a-40d4-98b2-b61466143f51",
               imageBuilder: (context, imageProvider) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: Image.network("https://firebasestorage.googleapis.com/v0/b/blogee-2f337.appspot.com/o/postImages%2Fimages.jpeg?alt=media&token=e5d63ca9-20c3-4056-994b-f396c493d96d",
+                child: Image.network("https://firebasestorage.googleapis.com/v0/b/pet-booking-36c3a.appspot.com/o/posts%2F1704570086968.png?alt=media&token=7492c9b9-cc6a-40d4-98b2-b61466143f51",
                   width: MediaQuery.of(context).size.width,
                   fit: BoxFit.fill,),
               ),
