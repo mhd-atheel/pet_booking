@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -15,26 +16,32 @@ class CreatePetPost extends StatefulWidget {
 }
 
 class _CreatePetPostState extends State<CreatePetPost> {
-
   // instances
   final imagePicker = ImagePicker();
   bool isLoading = false;
   File? _image;
   String? downloadURL;
-  List<String> list = ['Male', 'Female',];
+  List<String> list = [
+    'Male',
+    'Female',
+  ];
+  List<String> categories = [
+    'Cat',
+    'Dog',
+  ];
   String dropdownValue = "Male";
+  String categoryValue = "Cat";
 
   CollectionReference posts = FirebaseFirestore.instance.collection('posts');
 
   //  TextEditingController
   final nameController = TextEditingController();
   final ageController = TextEditingController();
+  final priceController = TextEditingController();
   final breedController = TextEditingController();
   final colorController = TextEditingController();
 
   final descriptionController = TextEditingController();
-
-
 
   Future imagePickerMethod(source) async {
     final pick = await imagePicker.pickImage(source: source);
@@ -49,33 +56,57 @@ class _CreatePetPostState extends State<CreatePetPost> {
     });
   }
 
-  createPost (){
-    posts.add({
-      'name': nameController.text,
-      'age': ageController.text,
-      'breed': breedController.text,
-      'color': colorController.text,
-      'description': descriptionController.text,
-      'sex':dropdownValue,
-      'createdAt':Timestamp.now().toDate(),
-      'userId':FirebaseAuth.instance.currentUser!.uid,
-      'image': "this image url is temporary null",
-    }).then((value) => {
-         print("post created successfully")
+  Future<void> createPost() async {
+    setState(() {
+      isLoading = true;
+    });
+    await uploadImage().then((value) {
+      posts.add({
+        'name': nameController.text,
+        'age': ageController.text,
+        'price': priceController.text,
+        'breed': breedController.text,
+        'color': colorController.text,
+        'description': descriptionController.text,
+        'sex': dropdownValue.toLowerCase(),
+        'category': categoryValue.toLowerCase(),
+        'createdAt': Timestamp.now().toDate(),
+        'userId': FirebaseAuth.instance.currentUser!.uid,
+        'image': downloadURL,
+      }).then((value) => {
+            setState(() {
+              isLoading = false;
+            }),
+        nameController.clear(),
+        ageController.clear(),
+        priceController.clear(),
+        breedController.clear(),
+        colorController.clear(),
+        descriptionController.clear(),
+        dropdownValue = 'Male',
+        categoryValue = 'Cat',
+        _image = null,
+        downloadURL = '',
+
+            AnimatedSnackBar.material(
+              "Post Created SuccessFully",
+              type: AnimatedSnackBarType.success,
+            ).show(context),
+            print("post created successfully")
+          });
     });
   }
 
-
-
   Future uploadImage() async {
-    final  posttime = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference ref = FirebaseStorage.instance.ref().child('posts').child(posttime);
+    final posttime = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference ref = FirebaseStorage.instance
+        .ref()
+        .child('posts')
+        .child(posttime + "." + _image!.path.split('.').reversed.toList()[0]);
     await ref.putFile(_image!).whenComplete(() => print("complete"));
     downloadURL = await ref.getDownloadURL();
     print(downloadURL);
   }
-
-
 
   void _settingModalBottomSheet(context) {
     showModalBottomSheet(
@@ -187,12 +218,12 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20, top: 0),
                   child: TextFormField(
-                    controller: nameController,
+                      controller: nameController,
                       decoration: const InputDecoration(
-                    hintText: 'your pet name',
-                    labelStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none,
-                  )),
+                        hintText: 'your pet name',
+                        labelStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                      )),
                 ),
               ),
             ),
@@ -231,6 +262,37 @@ class _CreatePetPostState extends State<CreatePetPost> {
               padding: EdgeInsets.only(left: 15.0, top: 10, right: 15),
               child: Row(
                 children: [
+                  Text("Price"),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 15.0, top: 5, right: 15),
+              child: Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                    // 0xfff2f2f2  - like a gray
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: Colors.black54)),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, top: 0),
+                  child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      controller: priceController,
+                      decoration: InputDecoration(
+                        hintText: 'your pet price',
+                        labelStyle: TextStyle(color: Colors.grey.shade50),
+                        border: InputBorder.none,
+                      )),
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(left: 15.0, top: 10, right: 15),
+              child: Row(
+                children: [
                   Text("Breed"),
                 ],
               ),
@@ -248,12 +310,12 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20, top: 0),
                   child: TextFormField(
-                    controller: breedController,
+                      controller: breedController,
                       decoration: InputDecoration(
-                    hintText: 'your pet breed',
-                    labelStyle: TextStyle(color: Colors.grey.shade50),
-                    border: InputBorder.none,
-                  )),
+                        hintText: 'your pet breed',
+                        labelStyle: TextStyle(color: Colors.grey.shade50),
+                        border: InputBorder.none,
+                      )),
                 ),
               ),
             ),
@@ -271,7 +333,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 height: 50,
                 width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
-                  // 0xfff2f2f2  - like a gray
+                    // 0xfff2f2f2  - like a gray
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(color: Colors.black54)),
@@ -320,7 +382,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 ),
               ),
             ),
-        
+
             const Padding(
               padding: EdgeInsets.only(left: 15.0, top: 10, right: 15),
               child: Row(
@@ -336,7 +398,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 width: MediaQuery.of(context).size.width,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
-                  // 0xfff2f2f2  - like a gray
+                    // 0xfff2f2f2  - like a gray
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(color: Colors.black54)),
@@ -345,7 +407,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                     value: dropdownValue,
                     icon: const Icon(Icons.keyboard_arrow_down_outlined),
                     elevation: 16,
-                    style:  TextStyle(color: Colors.grey.shade900),
+                    style: TextStyle(color: Colors.grey.shade900),
                     onChanged: (String? value) {
                       // This is called when the user selects an item.
                       setState(() {
@@ -366,17 +428,60 @@ class _CreatePetPostState extends State<CreatePetPost> {
               padding: EdgeInsets.only(left: 15.0, top: 10, right: 15),
               child: Row(
                 children: [
+                  Text("Categories"),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 15.0, top: 5, right: 15),
+              child: Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                    // 0xfff2f2f2  - like a gray
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: Colors.black54)),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: categoryValue,
+                    icon: const Icon(Icons.keyboard_arrow_down_outlined),
+                    elevation: 16,
+                    style: TextStyle(color: Colors.grey.shade900),
+                    onChanged: (String? value) {
+                      // This is called when the user selects an item.
+                      setState(() {
+                        categoryValue = value!;
+                      });
+                    },
+                    items: categories
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(left: 15.0, top: 10, right: 15),
+              child: Row(
+                children: [
                   Text("Select Image"),
                 ],
               ),
             ),
-        
+
             GestureDetector(
               onTap: () {
                 _settingModalBottomSheet(context);
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                 child: Container(
                     width: MediaQuery.of(context).size.width,
                     decoration: BoxDecoration(
@@ -443,12 +548,11 @@ class _CreatePetPostState extends State<CreatePetPost> {
               ),
             ),
             GestureDetector(
-              onTap: (){
-                uploadImage();
-                //createPost();
+              onTap: () {
+                createPost();
               },
               child: Padding(
-                padding: const EdgeInsets.only(left: 15, right: 15,top: 15),
+                padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
                 child: Container(
                   height: 50,
                   decoration: BoxDecoration(
@@ -456,18 +560,27 @@ class _CreatePetPostState extends State<CreatePetPost> {
                       borderRadius: BorderRadius.circular(10)),
                   width: MediaQuery.of(context).size.width,
                   child: Center(
-                      child: isLoading==false ?const Text(
-                         'Create',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 20
+                      child: isLoading == false
+                          ? const Text(
+                              'Create',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 20),
+                            )
+                          :  const SizedBox(
+                        height: 30.0,
+                        width: 30.0,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
                         ),
-                      ):const CircularProgressIndicator()),
+                      )),
                 ),
               ),
             ),
-            const SizedBox(height: 20,)
+            const SizedBox(
+              height: 20,
+            )
           ],
         ),
       ),
