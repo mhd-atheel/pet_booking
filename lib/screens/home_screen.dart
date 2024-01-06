@@ -10,12 +10,12 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Pet Booking App".toUpperCase()),
         centerTitle: true,
+        automaticallyImplyLeading: false,
       ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               children: [
-            
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
