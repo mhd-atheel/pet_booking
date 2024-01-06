@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -9,6 +11,11 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+
+  CollectionReference posts = FirebaseFirestore.instance.collection('requests');
+
+
+
   showDetail(key,value){
     return  Column(
       children: [
@@ -38,6 +45,20 @@ class _DetailScreenState extends State<DetailScreen> {
       ],
     );
   }
+
+  Future <void>createRequest () async{
+    posts.add({
+
+      'createdAt':Timestamp.now().toDate(),
+      'userId':FirebaseAuth.instance.currentUser!.uid,
+    }).then((value) => {
+      print("Request Created Successfully")
+    });
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
@@ -94,6 +115,7 @@ class _DetailScreenState extends State<DetailScreen> {
           GestureDetector(
             onTap: (){
               print("Requested");
+              createRequest();
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
