@@ -15,13 +15,19 @@ class CreatePetPost extends StatefulWidget {
 }
 
 class _CreatePetPostState extends State<CreatePetPost> {
+
+  // instances
   final imagePicker = ImagePicker();
   bool isLoading = false;
   File? _image;
   String? downloadURL;
-  TextEditingController descriptionController = TextEditingController();
   List<String> list = ['Male', 'Female',];
   String dropdownValue = "Male";
+
+  //  TextEditingController
+  final descriptionController = TextEditingController();
+  final nameController = TextEditingController();
+
 
 
   Future imagePickerMethod(source) async {
@@ -42,8 +48,8 @@ class _CreatePetPostState extends State<CreatePetPost> {
   }
   Future uploadImage() async {
     final  posttime = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference ref = FirebaseStorage.instance.ref().child('posts').child("assets/images/image1.png");
-    //await ref.putFile().whenComplete(() => print("complete"));
+    Reference ref = FirebaseStorage.instance.ref().child('posts').child(posttime);
+    await ref.putFile(_image!).whenComplete(() => print("complete"));
     downloadURL = await ref.getDownloadURL();
     print(downloadURL);
   }
