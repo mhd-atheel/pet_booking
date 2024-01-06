@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,21 +18,37 @@ class _CreatePetPostState extends State<CreatePetPost> {
   final imagePicker = ImagePicker();
   bool isLoading = false;
   File? _image;
+  String? downloadURL;
   TextEditingController descriptionController = TextEditingController();
   List<String> list = ['Male', 'Female',];
   String dropdownValue = "Male";
+
 
   Future imagePickerMethod(source) async {
     final pick = await imagePicker.pickImage(source: source);
     setState(() {
       if (pick != null) {
         _image = File(pick.path);
+        print(_image);
       }
       // else{
       //   showSnackBars("No File Selected", Duration(milliseconds: 400));
       // }
     });
   }
+
+  createPost (){
+
+  }
+  Future uploadImage() async {
+    final  posttime = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference ref = FirebaseStorage.instance.ref().child('posts').child("assets/images/image1.png");
+    //await ref.putFile().whenComplete(() => print("complete"));
+    downloadURL = await ref.getDownloadURL();
+    print(downloadURL);
+  }
+
+
 
   void _settingModalBottomSheet(context) {
     showModalBottomSheet(
@@ -126,6 +145,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                 ],
               ),
             ),
+            Image.asset('assets/images/image1.png'),
             Padding(
               padding: const EdgeInsets.only(left: 15.0, top: 5, right: 15),
               child: Container(
@@ -392,7 +412,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
             ),
             GestureDetector(
               onTap: (){
-
+                uploadImage();
               },
               child: Padding(
                 padding: const EdgeInsets.only(left: 15, right: 15,top: 15),
