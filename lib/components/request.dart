@@ -2,7 +2,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class Request extends StatefulWidget {
-  const Request({super.key});
+  final String name;
+  final String contact;
+  final String image;
+  final String status;
+
+  const Request(
+      {super.key,
+      required this.name,
+      required this.contact,
+      required this.image,
+      required this.status});
 
   @override
   State<Request> createState() => _RequestState();
@@ -19,14 +29,14 @@ class _RequestState extends State<Request> {
       child: Column(
         children: [
           ListTile(
-            title:const  Text("Mohamed Atheel"),
-            subtitle: const Text("+9475 075 5684"),
+            title: Text(widget.name),
+            subtitle: Text(widget.contact),
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(22), // Image border
               child: SizedBox.fromSize(
                 size: const Size.fromRadius(22), // Image radius
                 child: CachedNetworkImage(
-                  imageUrl: "https://firebasestorage.googleapis.com/v0/b/blogee-2f337.appspot.com/o/userImages%2Fthalapathy_vijay_makes_his_insta_debut-three_four.jpg?alt=media&token=4fe2de28-1323-4705-99a1-c2435af63d69",
+                  imageUrl: widget.image,
                   imageBuilder: (context, imageProvider) => Container(
                     height: 80,
                     width: 110,
@@ -45,68 +55,95 @@ class _RequestState extends State<Request> {
                 ),
               ),
             ),
-
-
           ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              GestureDetector(
-                onTap: (){
-                  print("Accepted");
-                },
-                child: Container(
-                  height: 40,
-                  width: MediaQuery.of(context).size.width/2.5,
-                  decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(5)
-                  ),
-                  child: const Center(
-                    child: Text("Accept",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontSize: 15
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: (){
-                  print("Canceled");
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(),
-                  child: Container(
-                    height: 40,
-                    width: MediaQuery.of(context).size.width/2.5,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: Colors.orange)
-                    ),
-                    child: const Center(
-                      child: Text("Cancel",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
+          widget.status == 'pending'
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        print("Accepted");
+                      },
+                      child: Container(
+                        height: 40,
+                        width: MediaQuery.of(context).size.width / 2.5,
+                        decoration: BoxDecoration(
                             color: Colors.orange,
-                            fontSize: 15
+                            borderRadius: BorderRadius.circular(5)),
+                        child: const Center(
+                          child: Text(
+                            "Accept",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 15),
+                          ),
                         ),
                       ),
                     ),
+                    GestureDetector(
+                      onTap: () {
+                        print("Canceled");
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(),
+                        child: Container(
+                          height: 40,
+                          width: MediaQuery.of(context).size.width / 2.5,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(color: Colors.orange)),
+                          child: const Center(
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange,
+                                  fontSize: 15),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 15),
+                child: Container(
+                    height: 40,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(5)),
+                    child: const Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Accepted",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 15),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(Icons.done,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                ),
               ),
-            ],
+          const SizedBox(
+            height: 15,
           ),
-          const SizedBox(height: 15,),
         ],
       ),
-
-
     );
   }
 }

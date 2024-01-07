@@ -79,10 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                     final orders = snapshot.data!.docs;
 
-                    snapshot.data!.docs.map((DocumentSnapshot document) {
-                       documentId = document.id;
-                       print('>>>>>>>>>DOC ID'+documentId);
-                    });
+                    var id = snapshot.data!.docs.map((DocumentSnapshot document)=> documentId=document.id);
+                    print('>>>>>>>>>DOC ID'+id.toString());
+                    //documentId = id.toString();
+                    print('>>>>>>>>>DOC ID'+documentId);
 
 
                     return ListView.builder(
@@ -178,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           MaterialPageRoute(builder: (context) =>  DetailScreen(
                                             image:orders[index]['image'] ,
                                             description:orders[index]['description'] ,
+                                            postId:orders[index].id,
                                             name:orders[index]['name'] ,
                                             age:orders[index]['age'] ,
                                             breed:orders[index]['breed'] ,
