@@ -16,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String searchText = '';
   bool isSearching = false;
+  String documentId = '';
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +79,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                     final orders = snapshot.data!.docs;
 
+                    snapshot.data!.docs.map((DocumentSnapshot document) {
+                       documentId = document.id;
+                       print('>>>>>>>>>DOC ID'+documentId);
+                    });
+
+
                     return ListView.builder(
                         itemCount: orders.length,
                         shrinkWrap: true,
@@ -90,115 +97,135 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return Container();
                               }
                               final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                              return  GestureDetector(
-                                onTap: (){
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) =>  DetailScreen(
-                                      image:orders[index]['image'] ,
-                                      description:orders[index]['description'] ,
-                                      name:orders[index]['name'] ,
-                                      age:orders[index]['age'] ,
-                                      breed:orders[index]['breed'] ,
-                                      sex:orders[index]['sex'] ,
-                                      price:orders[index]['price'] ,
-                                      category:orders[index]['category'] ,
-                                    )),
-                                  );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      border: Border.all(color: const Color(0xff0E1041)),
-                                      borderRadius: BorderRadius.circular(10)),
-                                  margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                                  child: Column(
-                                    children: [
-                                      ListTile(
-                                        title:Text(userData['name']),
-                                        subtitle: Text(orders[index]['createdAt'].toDate().toString().substring(0,10)),
-                                        leading: ClipRRect(
-                                          borderRadius: BorderRadius.circular(22), // Image border
-                                          child: SizedBox.fromSize(
-                                            size: const Size.fromRadius(22), // Image radius
-                                            child: CachedNetworkImage(
-                                              imageUrl: "https://firebasestorage.googleapis.com/v0/b/blogee-2f337.appspot.com/o/userImages%2Fthalapathy_vijay_makes_his_insta_debut-three_four.jpg?alt=media&token=4fe2de28-1323-4705-99a1-c2435af63d69",
-                                              imageBuilder: (context, imageProvider) => Container(
-                                                height: 80,
-                                                width: 110,
-                                                decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                    image: imageProvider,
-                                                    fit: BoxFit.cover,
+
+                              return  Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: const Color(0xff0E1041)),
+                                    borderRadius: BorderRadius.circular(10)),
+                                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      title:Text(userData['name']),
+                                      subtitle: Text(orders[index]['createdAt'].toDate().toString().substring(0,10)),
+                                      leading: userData['image'] == ''?CircleAvatar(
+                                          radius: 22,
+                                          backgroundColor: Colors.orange,
+                                          child: Text(
+                                            userData['name'].toString().substring(0,1),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold
+                                            ),
+                                          ))
+                                          :  ClipRRect(
+                                        borderRadius: BorderRadius.circular(22), // Image border
+                                        child: SizedBox.fromSize(
+                                          size: const Size.fromRadius(22), // Image radius
+                                          child: CachedNetworkImage(
+                                            imageUrl:userData['image'],
+                                            imageBuilder: (context, imageProvider) => Container(
+                                              height: 80,
+                                              width: 110,
+                                              decoration: BoxDecoration(
+                                                image: DecorationImage(
+                                                  image: imageProvider,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ),
+                                            placeholder: (context, url) => const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: CircularProgressIndicator(),
+                                            ),
+                                            errorWidget: (context, url, error) => const Icon(Icons.error),
+                                          ),
+                                        ),
+                                      ),
+
+
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 15.0,vertical: 5),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(orders[index]['description'],style: const TextStyle(
+                                                fontWeight: FontWeight.normal,color: Colors.black38,fontFamily: 'Prompt'
+                                            ),),
+                                          ),
+
+                                        ],
+                                      ),
+                                    ),
+                                    CachedNetworkImage(
+                                      imageUrl:orders[index]['image'],
+                                      imageBuilder: (context, imageProvider) => Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                        child: Image.network(orders[index]['image'],
+                                          width: MediaQuery.of(context).size.width,
+                                          fit: BoxFit.fill,),
+                                      ),
+                                      placeholder: (context, url) => const CircularProgressIndicator(),
+                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                    ),
+                                    const SizedBox(height: 15,),
+                                    GestureDetector(
+                                      onTap: (){
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) =>  DetailScreen(
+                                            image:orders[index]['image'] ,
+                                            description:orders[index]['description'] ,
+                                            name:orders[index]['name'] ,
+                                            age:orders[index]['age'] ,
+                                            breed:orders[index]['breed'] ,
+                                            sex:orders[index]['sex'] ,
+                                            price:orders[index]['price'] ,
+                                            category:orders[index]['category'],
+                                            userId: orders[index]['userId'],
+                                          )),
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                        child: Container(
+                                          height: 40,
+                                          width: MediaQuery.of(context).size.width,
+                                          decoration: BoxDecoration(
+                                              color: Colors.orange,
+                                              borderRadius: BorderRadius.circular(5)
+                                          ),
+                                          child: const Center(
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text("Request Now",
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.white,
+                                                      fontSize: 15
                                                   ),
                                                 ),
-                                              ),
-                                              placeholder: (context, url) => const Padding(
-                                                padding: EdgeInsets.all(8.0),
-                                                child: CircularProgressIndicator(),
-                                              ),
-                                              errorWidget: (context, url, error) => const Icon(Icons.error),
-                                            ),
-                                          ),
-                                        ),
-
-
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 15.0,vertical: 5),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(orders[index]['description'],style: const TextStyle(
-                                                  fontWeight: FontWeight.normal,color: Colors.black38,fontFamily: 'Prompt'
-                                              ),),
-                                            ),
-
-                                          ],
-                                        ),
-                                      ),
-                                      CachedNetworkImage(
-                                        imageUrl:orders[index]['image'],
-                                        imageBuilder: (context, imageProvider) => Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                                          child: Image.network(orders[index]['image'],
-                                            width: MediaQuery.of(context).size.width,
-                                            fit: BoxFit.fill,),
-                                        ),
-                                        placeholder: (context, url) => const CircularProgressIndicator(),
-                                        errorWidget: (context, url, error) => const Icon(Icons.error),
-                                      ),
-                                      const SizedBox(height: 15,),
-                                      GestureDetector(
-                                        onTap: (){
-                                          print("Requested");
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                                          child: Container(
-                                            height: 40,
-                                            width: MediaQuery.of(context).size.width,
-                                            decoration: BoxDecoration(
-                                                color: Colors.orange,
-                                                borderRadius: BorderRadius.circular(5)
-                                            ),
-                                            child: const Center(
-                                              child: Text("Request",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
+                                                Padding(
+                                                  padding: EdgeInsets.only(left: 8.0),
+                                                  child: Icon(Icons.arrow_forward_ios_outlined,
+                                                    size: 20,
                                                     color: Colors.white,
-                                                    fontSize: 15
-                                                ),
-                                              ),
+                                                  ),
+                                                )
+                                              ],
                                             ),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 15,),
-                                    ],
-                                  ),
-
-
+                                    ),
+                                    const SizedBox(height: 15,),
+                                  ],
                                 ),
+
+
                               );
                             },
                           );

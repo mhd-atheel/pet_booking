@@ -1,6 +1,17 @@
+import 'dart:io';
+import 'dart:io';
+
+import 'package:animated_snack_bar/animated_snack_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:pet_booking/screens/auth_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,36 +21,65 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  // instances
   bool isLoading = false;
   bool isEditPressed = false;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   late String name = '';
-  late String email= '';
-  late String contact= '';
-  late String address= '';
+  late String email = '';
+  late String contact = '';
+  late String address = '';
 
+  // image picking and uploading variables
+  final imagePicker = ImagePicker();
+  File? _image;
+  String? downloadURL;
+
+  //TextEditingController
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final contactController = TextEditingController();
   final addressController = TextEditingController();
 
+  // update user
   Future<void> updateUser() async {
     setState(() {
-      isLoading =true;
+      isLoading = true;
     });
-    await firestore.collection("users")
-        .doc( FirebaseAuth.instance.currentUser!.uid)
-        .update({
-      'name':nameController.text,
-      'email':emailController.text,
-      'address':addressController.text,
-      'contact':contactController.text,
-    }).then((value) {
-      setState(() {
-        isLoading =false;
-        isEditPressed = false;
+    if (_image == null) {
+      await firestore
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({
+        'name': nameController.text,
+        'email': emailController.text,
+        'address': addressController.text,
+        'contact': contactController.text,
+      }).then((value) {
+        setState(() {
+          isLoading = false;
+          isEditPressed = false;
+        });
       });
-    });
+    } else {
+      uploadImage().then((value) async {
+        await firestore
+            .collection("users")
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .update({
+          'name': nameController.text,
+          'email': emailController.text,
+          'address': addressController.text,
+          'contact': contactController.text,
+          'image': downloadURL,
+        }).then((value) {
+          setState(() {
+            isLoading = false;
+            isEditPressed = false;
+          });
+        });
+      });
+    }
   }
 
   showDetail(key, value) {
@@ -96,13 +136,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Padding(
               padding: const EdgeInsets.only(left: 20, top: 0),
               child: TextFormField(
-                controller: controller,
-                  enabled: key == 'Your Email :-'?false:true,
+                  controller: controller,
+                  enabled: key == 'Your Email :-' ? false : true,
                   decoration: InputDecoration(
-                hintText: value,
-                labelStyle: const TextStyle(color: Colors.grey),
-                border: InputBorder.none,
-              )),
+                    hintText: value,
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    border: InputBorder.none,
+                  )),
             ),
           ),
         ),
@@ -110,11 +150,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future imagePickerMethod() async {
+    final pick = await imagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pick != null) {
+        _image = File(pick.path);
+        print(_image);
+      } else {
+        AnimatedSnackBar.material(
+          "Image Not Selected",
+          type: AnimatedSnackBarType.error,
+        ).show(context);
+      }
+    });
+  }
 
-
-  @override
-  void initState() {
-    super.initState();
+  Future uploadImage() async {
+    final posttime = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference ref = FirebaseStorage.instance
+        .ref()
+        .child('users')
+        .child(FirebaseAuth.instance.currentUser!.uid);
+    await ref.putFile(_image!).whenComplete(() => print("complete"));
+    downloadURL = await ref.getDownloadURL();
+    print(downloadURL);
   }
 
   @override
@@ -124,6 +183,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text("My Profile".toUpperCase()),
         centerTitle: true,
         automaticallyImplyLeading: false,
+        actions: [
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text("Are you sure?"),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                      },
+                      child: const Text("Cancel",
+                          style: TextStyle(color: Colors.black)),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        FirebaseAuth.instance.signOut().then((value) {
+                          Get.offAll(const AuthScreen());
+                          AnimatedSnackBar.material(
+                            "Logout SuccessFully",
+                            type: AnimatedSnackBarType.success,
+                          ).show(context);
+                        });
+                      },
+                      child: const Text(
+                        "Logout",
+                        style: TextStyle(color: Colors.orange),
+                      ),
+                    )
+                  ],
+                ),
+              );
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15.0),
+              child: Icon(
+                FontAwesomeIcons.arrowRightFromBracket,
+                color: Colors.red,
+              ),
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -142,36 +244,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                  name = snapshot.data!['name'];
-                  email = snapshot.data!['email'];
-                  contact = snapshot.data!['contact'];
-                  address = snapshot.data!['address'];
+                name = snapshot.data!['name'];
+                email = snapshot.data!['email'];
+                contact = snapshot.data!['contact'];
+                address = snapshot.data!['address'];
 
-                  nameController.text = name;
-                  emailController.text = email;
-                  contactController.text = contact;
-                  addressController.text = address;
-
+                nameController.text = name;
+                emailController.text = email;
+                contactController.text = contact;
+                addressController.text = address;
 
                 return Column(
                   children: [
                     Center(
                         child: isEditPressed == false
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(70),
-                                child: SizedBox.fromSize(
-                                  size: const Size.fromRadius(70),
-                                  child: Image.network(
-                                    'https://firebasestorage.googleapis.com/v0/b/blogee-2f337.appspot.com/o/userImages%2Fthalapathy_vijay_makes_his_insta_debut-three_four.jpg?alt=media&token=4fe2de28-1323-4705-99a1-c2435af63d69',
-                                    width: 30,
-                                    height: 30,
-                                    fit: BoxFit.fill,
+                            ? snapshot.data!['image'] == ""
+                                ?  CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.orange,
+                                    child: Text(
+                                        snapshot.data!['name'].toString().substring(0,1),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    ))
+                                : ClipRRect(
+                          borderRadius: BorderRadius.circular(70), // Image border
+                          child: SizedBox.fromSize(
+                            size: const Size.fromRadius(70), // Image radius
+                            child: CachedNetworkImage(
+                              imageUrl: snapshot.data!['image'],
+                              imageBuilder: (context, imageProvider) => Container(
+                                height: 30,
+                                width: 30,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: imageProvider,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                              )
-                            : const CircleAvatar(
-                                radius: 50,
-                                child: Icon(Icons.add_a_photo_outlined),
+                              ),
+                              placeholder: (context, url) => const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  height: 30.0,
+                                  width: 30.0,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => const Icon(Icons.error),
+                            ),
+                          ),
+                        )
+                            : GestureDetector(
+                                onTap: () {
+                                  imagePickerMethod();
+                                },
+                                child: _image == null
+                                    ? const CircleAvatar(
+                                        radius: 50,
+                                        child: Icon(Icons.add_a_photo_outlined),
+                                      )
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(70),
+                                        child: SizedBox.fromSize(
+                                          size: const Size.fromRadius(70),
+                                          child: Image.file(
+                                            _image!,
+                                            width: 30,
+                                            height: 30,
+                                            fit: BoxFit.fill,
+                                          ),
+                                        ),
+                                      ),
                               )),
                     if (isEditPressed == false)
                       Padding(
@@ -204,14 +353,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (isEditPressed == true)
                       Column(
                         children: [
+                          showEditDetail("Your Name :-", name, nameController),
                           showEditDetail(
-                              "Your Name :-", name,nameController),
+                              "Your Email :-", email, emailController),
                           showEditDetail(
-                              "Your Email :-", email,emailController),
-                          showEditDetail(
-                              "Contact Number :-", contact,contactController),
-                          showEditDetail("Residential Address :-",
-                              address,addressController),
+                              "Contact Number :-", contact, contactController),
+                          showEditDetail("Residential Address :-", address,
+                              addressController),
                         ],
                       ),
                     GestureDetector(
@@ -251,12 +399,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           fontSize: 20),
                                     )
                                   : const SizedBox(
-                                height: 30.0,
-                                width: 30.0,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              )),
+                                      height: 30.0,
+                                      width: 30.0,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    )),
                         ),
                       ),
                     ),
@@ -279,14 +427,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(10)),
                             width: MediaQuery.of(context).size.width,
                             child: const Center(
-                                child:Text(
-                                        "Cancel",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.orange,
-                                            fontSize: 20),
-                                      )
-                                    ),
+                                child: Text(
+                              "Cancel",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange,
+                                  fontSize: 20),
+                            )),
                           ),
                         ),
                       ),

@@ -1,8 +1,8 @@
 import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pet_booking/components/bottom_navbar.dart';
-import 'package:pet_booking/screens/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -57,16 +57,14 @@ class _AuthScreenState extends State<AuthScreen> {
           'password': passwordController.text,
           'contact': contactController.text,
           'address': addressController.text,
+          'image': '',
         }).then((value) {
           print('account information updated');
           setState(() {
             isLoading = false;
           });
           showNotification("Account Created Successfully");
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const BottomNavbar()),
-          );
+          Get.offAll(BottomNavbar());
         }).catchError((error) => print("Failed to add user: $error"));
       });
     } on FirebaseAuthException catch (e) {
@@ -104,10 +102,7 @@ class _AuthScreenState extends State<AuthScreen> {
           isLoading = false;
         });
         showNotification('Login Successfully');
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const BottomNavbar()),
-        );
+        Get.offAll(const BottomNavbar());
 
       });
     } on FirebaseAuthException catch (e) {

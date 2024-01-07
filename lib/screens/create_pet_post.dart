@@ -18,8 +18,8 @@ class CreatePetPost extends StatefulWidget {
 class _CreatePetPostState extends State<CreatePetPost> {
   // instances
   final imagePicker = ImagePicker();
-  bool isLoading = false;
   File? _image;
+  bool isLoading = false;
   String? downloadURL;
   List<String> list = [
     'Male',
