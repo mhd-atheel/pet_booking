@@ -12,6 +12,7 @@ class DetailScreen extends StatefulWidget {
   final String sex;
   final String price;
   final String category;
+  final String userId;
   const DetailScreen({
     super.key,
     required this.image,
@@ -22,6 +23,7 @@ class DetailScreen extends StatefulWidget {
     required this.sex,
     required this.price,
     required this.category,
+    required this.userId
   });
 
   @override
@@ -69,6 +71,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
       'createdAt':Timestamp.now().toDate(),
       'userId':FirebaseAuth.instance.currentUser!.uid,
+      'postUserID':FirebaseAuth.instance.currentUser!.uid,
     }).then((value) => {
       print("Request Created Successfully")
     });
