@@ -71,10 +71,10 @@ class _DetailScreenState extends State<DetailScreen> {
     setState(() {
       isLoading = true;
     });
-    await posts.add({
+    await posts.doc(widget.userId).collection(widget.postId).doc(FirebaseAuth.instance.currentUser!.uid).set({
       'createdAt': Timestamp.now().toDate(),
       'userId': FirebaseAuth.instance.currentUser!.uid,
-      'postUserID': FirebaseAuth.instance.currentUser!.uid,
+      'postUserID': widget.userId,
       'postID': widget.postId,
       'request': 'pending',
     }).then((value) => {
@@ -88,6 +88,11 @@ class _DetailScreenState extends State<DetailScreen> {
           print("Request Created Successfully")
         });
   }
+
+  // Future <void> checkRequest () async{
+  //   FirebaseFirestore.instance.collection("requests").id.
+  // }
+
 
   @override
   Widget build(BuildContext context) {
@@ -156,37 +161,46 @@ class _DetailScreenState extends State<DetailScreen> {
               const SizedBox(
                 height: 20,
               ),
-              GestureDetector(
-                onTap: () {
-                  print("Requested");
-                  createRequest();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: Container(
-                    height: 50,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(5)),
-                    child:  Center(
-                      child: isLoading == false ? const Text(
-                        "Request",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 20),
-                      ): const SizedBox(
-                        height: 30.0,
-                        width: 30.0,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+               if(widget.userId != FirebaseAuth.instance.currentUser!.uid)
+                 GestureDetector(
+                   onTap: () {
+                     if(widget.userId == FirebaseAuth.instance.currentUser!.uid){
+                       AnimatedSnackBar.material(
+                         "You already sent this request",
+                         type: AnimatedSnackBarType.warning,
+                       ).show(context);
+                     }else{
+                       createRequest();
+                     }
+
+                   },
+                   child:  Padding(
+                     padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                     child: Container(
+                       height: 50,
+                       width: MediaQuery.of(context).size.width,
+                       decoration: BoxDecoration(
+                           color: Colors.orange,
+                           borderRadius: BorderRadius.circular(5)),
+                       child:  Center(
+                         child: isLoading == false ?  Text(
+                           widget.userId ==FirebaseAuth.instance.currentUser!.uid ?
+                           "Requested":"Request",
+                           style: const TextStyle(
+                               fontWeight: FontWeight.bold,
+                               color: Colors.white,
+                               fontSize: 20),
+                         ): const SizedBox(
+                           height: 30.0,
+                           width: 30.0,
+                           child: CircularProgressIndicator(
+                             color: Colors.white,
+                           ),
+                         ),
+                       ),
+                     ),
+                   ),
+                 ),
               const SizedBox(
                 height: 15,
               ),

@@ -263,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     radius: 50,
                                     backgroundColor: Colors.orange,
                                     child: Text(
-                                        snapshot.data!['name'].toString().substring(0,1),
+                                        snapshot.data!['name'].toString().substring(0,1).toUpperCase(),
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 30,

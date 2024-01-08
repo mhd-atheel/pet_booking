@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           radius: 22,
                                           backgroundColor: Colors.orange,
                                           child: Text(
-                                            userData['name'].toString().substring(0,1),
+                                            userData['name'].toString().substring(0,1).toUpperCase(),
                                             style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 15,

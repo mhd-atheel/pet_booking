@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Request extends StatefulWidget {
@@ -6,19 +7,44 @@ class Request extends StatefulWidget {
   final String contact;
   final String image;
   final String status;
+  final String docId;
 
   const Request(
       {super.key,
       required this.name,
       required this.contact,
       required this.image,
-      required this.status});
+      required this.status,
+      required this.docId
+
+      });
 
   @override
   State<Request> createState() => _RequestState();
 }
 
 class _RequestState extends State<Request> {
+
+  bool isAcceptLoading = false;
+  bool isCancelLoading = false;
+
+
+  Future<void> updateAcceptRequest() async {
+    setState(() {
+      isAcceptLoading = true;
+    });
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore.collection("requests").doc(widget.docId).update({
+      "request":"accepted"
+    }).then((value) {
+      setState(() {
+        isAcceptLoading = false;
+      });
+    });
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -35,7 +61,17 @@ class _RequestState extends State<Request> {
               borderRadius: BorderRadius.circular(22), // Image border
               child: SizedBox.fromSize(
                 size: const Size.fromRadius(22), // Image radius
-                child: CachedNetworkImage(
+                child: widget.image ==''?CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.orange,
+                    child: Text(
+                      widget.name.toString().substring(0,1).toUpperCase(),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold
+                      ),
+                    )) : CachedNetworkImage(
                   imageUrl: widget.image,
                   imageBuilder: (context, imageProvider) => Container(
                     height: 80,
@@ -63,6 +99,7 @@ class _RequestState extends State<Request> {
                     GestureDetector(
                       onTap: () {
                         print("Accepted");
+                        updateAcceptRequest();
                       },
                       child: Container(
                         height: 40,
@@ -70,13 +107,19 @@ class _RequestState extends State<Request> {
                         decoration: BoxDecoration(
                             color: Colors.orange,
                             borderRadius: BorderRadius.circular(5)),
-                        child: const Center(
-                          child: Text(
+                        child: Center(
+                          child: isAcceptLoading ==false ? const Text(
                             "Accept",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                                 fontSize: 15),
+                          ):const SizedBox(
+                            height: 15.0,
+                            width: 15.0,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -109,8 +152,9 @@ class _RequestState extends State<Request> {
                   ],
                 )
               : Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 15),
-                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                  child: Container(
                     height: 40,
                     width: MediaQuery.of(context).size.width,
                     decoration: BoxDecoration(
@@ -129,7 +173,8 @@ class _RequestState extends State<Request> {
                           ),
                           Padding(
                             padding: EdgeInsets.only(left: 8.0),
-                            child: Icon(Icons.done,
+                            child: Icon(
+                              Icons.done,
                               size: 20,
                               color: Colors.white,
                             ),
@@ -138,7 +183,7 @@ class _RequestState extends State<Request> {
                       ),
                     ),
                   ),
-              ),
+                ),
           const SizedBox(
             height: 15,
           ),
