@@ -23,6 +23,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   // instances
   bool isLoading = false;
+  int  tabIndex = 0;
   bool isEditPressed = false;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   late String name = '';
@@ -40,6 +41,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final emailController = TextEditingController();
   final contactController = TextEditingController();
   final addressController = TextEditingController();
+
+
 
   // update user
   Future<void> updateUser() async {
@@ -184,6 +187,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         centerTitle: true,
         automaticallyImplyLeading: false,
         actions: [
+          if (isEditPressed == false)
+            GestureDetector(
+              onTap: (){
+                if (isEditPressed == false) {
+                  print("Edit Button Mode");
+                  setState(() {
+                    isEditPressed = true;
+                  });
+                } else {
+                  print("Update Button Mode");
+                  print(nameController.text);
+                  print(emailController.text);
+                  print(contactController.text);
+                  print(addressController.text);
+                  updateUser();
+                }
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 5.0),
+                child: Icon(
+                  FontAwesomeIcons.penToSquare,
+                  color: Colors.green,
+                ),
+              ),
+            ),
           GestureDetector(
             onTap: () {
               showDialog(
@@ -224,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.red,
               ),
             ),
-          )
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -259,47 +287,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Center(
                         child: isEditPressed == false
                             ? snapshot.data!['image'] == ""
-                                ?  CircleAvatar(
+                                ? CircleAvatar(
                                     radius: 50,
                                     backgroundColor: Colors.orange,
                                     child: Text(
-                                        snapshot.data!['name'].toString().substring(0,1).toUpperCase(),
+                                      snapshot.data!['name']
+                                          .toString()
+                                          .substring(0, 1)
+                                          .toUpperCase(),
                                       style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.bold
-                                      ),
+                                          color: Colors.white,
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.bold),
                                     ))
                                 : ClipRRect(
-                          borderRadius: BorderRadius.circular(70), // Image border
-                          child: SizedBox.fromSize(
-                            size: const Size.fromRadius(70), // Image radius
-                            child: CachedNetworkImage(
-                              imageUrl: snapshot.data!['image'],
-                              imageBuilder: (context, imageProvider) => Container(
-                                height: 30,
-                                width: 30,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: imageProvider,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              placeholder: (context, url) => const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  height: 30.0,
-                                  width: 30.0,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => const Icon(Icons.error),
-                            ),
-                          ),
-                        )
+                                    borderRadius: BorderRadius.circular(
+                                        70), // Image border
+                                    child: SizedBox.fromSize(
+                                      size: const Size.fromRadius(
+                                          70), // Image radius
+                                      child: CachedNetworkImage(
+                                        imageUrl: snapshot.data!['image'],
+                                        imageBuilder:
+                                            (context, imageProvider) =>
+                                                Container(
+                                          height: 30,
+                                          width: 30,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: imageProvider,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        placeholder: (context, url) =>
+                                            const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            height: 30.0,
+                                            width: 30.0,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.orange,
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  )
                             : GestureDetector(
                                 onTap: () {
                                   imagePickerMethod();
@@ -362,52 +398,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               addressController),
                         ],
                       ),
-                    GestureDetector(
-                      onTap: () {
-                        if (isEditPressed == false) {
-                          print("Edit Button Mode");
-                          setState(() {
-                            isEditPressed = true;
-                          });
-                        } else {
-                          print("Update Button Mode");
-                          print(nameController.text);
-                          print(emailController.text);
-                          print(contactController.text);
-                          print(addressController.text);
-                          updateUser();
-                        }
-                      },
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.only(left: 15, right: 15, top: 30),
-                        child: Container(
-                          height: 50,
-                          decoration: BoxDecoration(
-                              color: Colors.orange,
-                              borderRadius: BorderRadius.circular(10)),
-                          width: MediaQuery.of(context).size.width,
-                          child: Center(
-                              child: isLoading == false
-                                  ? Text(
-                                      isEditPressed == false
-                                          ? 'Edit'
-                                          : "Update",
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontSize: 20),
-                                    )
-                                  : const SizedBox(
-                                      height: 30.0,
-                                      width: 30.0,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                      ),
-                                    )),
+                    if (isEditPressed == true)
+                      GestureDetector(
+                        onTap: () {
+                          if (isEditPressed == false) {
+                            print("Edit Button Mode");
+                            setState(() {
+                              isEditPressed = true;
+                            });
+                          } else {
+                            print("Update Button Mode");
+                            print(nameController.text);
+                            print(emailController.text);
+                            print(contactController.text);
+                            print(addressController.text);
+                            updateUser();
+                          }
+                        },
+                        child: Padding(
+                          padding:
+                          const EdgeInsets.only(left: 15, right: 15, top: 30),
+                          child: Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                                color: Colors.orange,
+                                borderRadius: BorderRadius.circular(10)),
+                            width: MediaQuery.of(context).size.width,
+                            child: Center(
+                                child: isLoading == false
+                                    ? Text(
+                                  isEditPressed == false
+                                      ? 'Edit'
+                                      : "Update",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 20),
+                                )
+                                    : const SizedBox(
+                                  height: 30.0,
+                                  width: 30.0,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                )),
+                          ),
                         ),
                       ),
-                    ),
+
                     if (isEditPressed == true)
                       GestureDetector(
                         onTap: () {
@@ -443,7 +481,237 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(
               height: 20,
-            )
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      tabIndex = 0;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 15),
+                    decoration: BoxDecoration(
+                      color: tabIndex ==0 ? Colors.orange:Colors.white,
+                      borderRadius: BorderRadius.circular(15)
+                    ),
+                    child: Text(
+                      "Your Posts",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: tabIndex ==0 ? Colors.white :Colors.orange
+                      ),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      tabIndex = 1;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 15),
+                    decoration: BoxDecoration(
+                        color: tabIndex ==1 ? Colors.orange:Colors.white,
+                        borderRadius: BorderRadius.circular(15)
+                    ),
+                    child: Text(
+                      "Feedbacks",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: tabIndex ==1 ? Colors.white :Colors.orange
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width/11
+              ),
+              child: const Divider(
+                color: Colors.grey,
+              ),
+            ),
+            StreamBuilder(
+              stream:
+                   FirebaseFirestore.instance
+                  .collection('posts').where('userId', isEqualTo:FirebaseAuth.instance.currentUser!.uid).snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Something went wrong'));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if(snapshot.data!.docs.isEmpty){
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20,),
+                      Image.asset('assets/images/logo.png',
+                        height: 50,
+                      ),
+                      const Center(child: Text('Not Found')),
+                    ],
+                  );
+                }
+                final orders = snapshot.data!.docs;
+
+                return ListView.builder(
+                    itemCount: orders.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context,index){
+                      return StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance.collection('users').doc(orders[index]['userId']).snapshots(),
+                        builder: (context, userSnapshot) {
+                          if (userSnapshot.connectionState == ConnectionState.waiting) {
+                            return Container();
+                          }
+
+                          final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+
+                          return  Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(color: const Color(0xff0E1041)),
+                                borderRadius: BorderRadius.circular(10)),
+                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title:Text(userData['name']),
+                                  subtitle: Text(orders[index]['createdAt'].toDate().toString().substring(0,10)),
+                                  leading: userData['image'] == ''?CircleAvatar(
+                                      radius: 22,
+                                      backgroundColor: Colors.orange,
+                                      child: Text(
+                                        userData['name'].toString().substring(0,1).toUpperCase(),
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold
+                                        ),
+                                      ))
+                                      :  ClipRRect(
+                                    borderRadius: BorderRadius.circular(22), // Image border
+                                    child: SizedBox.fromSize(
+                                      size: const Size.fromRadius(22), // Image radius
+                                      child: CachedNetworkImage(
+                                        imageUrl:userData['image'],
+                                        imageBuilder: (context, imageProvider) => Container(
+                                          height: 80,
+                                          width: 110,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: imageProvider,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        placeholder: (context, url) => const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                        errorWidget: (context, url, error) => const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  ),
+                                  trailing:  GestureDetector(
+                                    onTap: (){
+
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            content: const Text("Are you sure to Delete?"),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(ctx).pop();
+                                                },
+                                                child: const Text("Cancel",
+                                                    style: TextStyle(color: Colors.black)),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  FirebaseFirestore.instance.collection("posts").doc(orders[index].id).delete().then((value){
+                                                    setState(() {
+                                                      AnimatedSnackBar.material(
+                                                        "Your Post Deleted SuccessFully",
+                                                        type: AnimatedSnackBarType.success,
+                                                      ).show(context);
+                                                    });
+                                                    navigator!.pop(context);
+                                                  });
+                                                },
+                                                child: const Text(
+                                                  "Delete",
+                                                  style: TextStyle(color: Colors.red),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+
+                                    child: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                      size: 25,
+                                    ),
+                                  ),
+
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 15.0,vertical: 5),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(orders[index]['description'],style: const TextStyle(
+                                            fontWeight: FontWeight.normal,color: Colors.black38,fontFamily: 'Prompt'
+                                        ),),
+                                      ),
+
+                                    ],
+                                  ),
+                                ),
+                                CachedNetworkImage(
+                                  imageUrl:orders[index]['image'],
+                                  imageBuilder: (context, imageProvider) => Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                    child: Image.network(orders[index]['image'],
+                                      width: MediaQuery.of(context).size.width,
+                                      fit: BoxFit.fill,),
+                                  ),
+                                  placeholder: (context, url) => const CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                                ),
+                                const SizedBox(height: 15,),
+
+                                const SizedBox(height: 15,),
+                              ],
+                            ),
+
+
+                          );
+                        },
+                      );
+                    }
+                );
+
+
+              },
+            ),
           ],
         ),
       ),
