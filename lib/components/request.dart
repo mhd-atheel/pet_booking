@@ -44,6 +44,19 @@ class _RequestState extends State<Request> {
   }
 
 
+  Future<void> deleteAcceptRequest() async {
+    setState(() {
+      isCancelLoading = true;
+    });
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore.collection("requests").doc(widget.docId).delete().then((value) {
+      setState(() {
+        isCancelLoading = false;
+      });
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +139,7 @@ class _RequestState extends State<Request> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        print("Canceled");
+                        deleteAcceptRequest();
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(),
@@ -137,13 +150,19 @@ class _RequestState extends State<Request> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(5),
                               border: Border.all(color: Colors.orange)),
-                          child: const Center(
-                            child: Text(
+                          child:  Center(
+                            child: isCancelLoading ==false ? const Text(
                               "Cancel",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.orange,
                                   fontSize: 15),
+                            ):const SizedBox(
+                              height: 15.0,
+                              width: 15.0,
+                              child: CircularProgressIndicator(
+                                color: Colors.orange,
+                              ),
                             ),
                           ),
                         ),

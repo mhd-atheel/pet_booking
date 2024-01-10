@@ -549,7 +549,42 @@ class _CreatePetPostState extends State<CreatePetPost> {
             ),
             GestureDetector(
               onTap: () {
-                createPost();
+                if(
+                   nameController.text.isNotEmpty &&
+                   ageController.text.isNotEmpty &&
+                   priceController.text.isNotEmpty &&
+                    breedController.text.isNotEmpty &&
+                    colorController.text.isNotEmpty &&
+                    descriptionController.text.isNotEmpty &&
+                    _image != null
+                ){
+                  createPost();
+                }else if(
+                nameController.text.isNotEmpty &&
+                    ageController.text.isNotEmpty &&
+                    priceController.text.isNotEmpty &&
+                    breedController.text.isNotEmpty &&
+                    colorController.text.isNotEmpty &&
+                    descriptionController.text.isNotEmpty &&
+                    _image == null
+                ){
+                  setState(() {
+                    AnimatedSnackBar.material(
+                      "Please Select Image",
+                      type: AnimatedSnackBarType.error,
+                    ).show(context);
+                  });
+                }
+                else{
+                  setState(() {
+                    AnimatedSnackBar.material(
+                      "Please fill all the fields",
+                      type: AnimatedSnackBarType.error,
+                    ).show(context);
+                  });
+                }
+
+
               },
               child: Padding(
                 padding: const EdgeInsets.only(left: 15, right: 15, top: 15),

@@ -28,15 +28,12 @@ class _AuthScreenState extends State<AuthScreen> {
   final contactController = TextEditingController();
   final addressController = TextEditingController();
 
-
-  showNotification (notification){
+  showNotification(notification) {
     return AnimatedSnackBar.material(
       notification,
       type: AnimatedSnackBarType.success,
     ).show(context);
   }
-
-
 
   Future<void> createAccount() async {
     setState(() {
@@ -49,7 +46,6 @@ class _AuthScreenState extends State<AuthScreen> {
         password: passwordController.text,
       )
           .then((value) {
-
         print('create email account success');
         users.doc(FirebaseAuth.instance.currentUser!.uid).set({
           'name': nameController.text,
@@ -89,21 +85,21 @@ class _AuthScreenState extends State<AuthScreen> {
       print(e);
     }
   }
-  Future <void> loginAccount ()async {
+
+  Future<void> loginAccount() async {
     setState(() {
       isLoading = true;
     });
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text
-      ).then((value) {
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+              email: emailController.text, password: passwordController.text)
+          .then((value) {
         setState(() {
           isLoading = false;
         });
         showNotification('Login Successfully');
         Get.offAll(const BottomNavbar());
-
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -120,6 +116,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -254,6 +251,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 20, top: 0),
                             child: TextFormField(
+                              keyboardType: TextInputType.number,
                                 controller: contactController,
                                 decoration: const InputDecoration(
                                   hintText: 'contact number',
@@ -299,16 +297,34 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 GestureDetector(
                   onTap: () {
-                    if(isRegisterPage ==true){
-                      createAccount();
-                    }else{
-                      loginAccount();
+                    if (isRegisterPage == true) {
+                      if (nameController.text.isNotEmpty &&
+                          emailController.text.isNotEmpty &&
+                          passwordController.text.isNotEmpty &&
+                          contactController.text.isNotEmpty &&
+                          addressController.text.isNotEmpty) {
+                        createAccount();
+                      } else {
+                        setState(() {
+                          AnimatedSnackBar.material(
+                            "Please fill all the fields",
+                            type: AnimatedSnackBarType.error,
+                          ).show(context);
+                        });
+                      }
+                    } else {
+                      if (emailController.text.isNotEmpty &&
+                          passwordController.text.isNotEmpty) {
+                        loginAccount();
+                      } else {
+                        setState(() {
+                          AnimatedSnackBar.material(
+                            "Please fill all the fields",
+                            type: AnimatedSnackBarType.error,
+                          ).show(context);
+                        });
+                      }
                     }
-
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    // );
                   },
                   child: Padding(
                     padding:

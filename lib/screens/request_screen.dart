@@ -19,62 +19,56 @@ class RequestScreen extends StatelessWidget {
         child: Column(
           children: [
         StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('requests').doc(FirebaseAuth.instance.currentUser!.uid).snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+        stream: FirebaseFirestore.instance.collection('requests').where('postUserID', isEqualTo:FirebaseAuth.instance.currentUser!.uid).snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Something went wrong'));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          // Check if the data is not null before casting
-          final requestData = snapshot.data?.data() as Map<String, dynamic>?;
-
-          if (requestData == null) {
-            // Handle the case where data is null
-            return const Center(child: Text('Document is null'));
+          if(snapshot.data!.docs.isEmpty){
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height/3,
+                ),
+                Image.asset('assets/images/logo.png',
+                  height: 50,
+                ),
+                const Center(child: Text('Not Found')),
+              ],
+            );
           }
 
-          return StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('requests').doc(FirebaseAuth.instance.currentUser!.uid).collection(snapshot.data!.id).snapshots(),
-            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snap) {
+          // Check if the data is not null before casting
+          final orders = snapshot.data!.docs;
 
-              if (snapshot.hasError) {
-                return const Center(child: Text('Something went wrong'));
+          return  ListView.builder(
+              itemCount: orders.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context,index){
+                return StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance.collection('users').doc(orders[index]['userId']).snapshots(),
+                  builder: (context, userSnapshot) {
+                    if (userSnapshot.connectionState == ConnectionState.waiting) {
+                      return Container();
+                    }
+                    final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+
+                    return Request(
+                        name: userData['name'],
+                        contact: userData['contact'],
+                        image: userData['image'],
+                        status: orders[index]['request'],
+                        docId: orders[index].id
+                    ) ;
+                  },
+                );
               }
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              // Check if user data is not null before casting
-              //final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
-              Map<String, dynamic> myData = snap.data! as Map<String, dynamic>;
-              // if (userData == null) {
-              //   // Handle the case where user data is null
-              //   return Container();
-              // }
-
-              // return Request(
-              //   name: myData['postId'],
-              //   contact: myData['contact'],
-              //   image: myData['image'],
-              //   status: requestData['request'],
-              //   docId: snapshot.data!.id,
-              // );
-
-              return SizedBox(
-                height: 370,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  children: snap.data!.docs.map((DocumentSnapshot document) {
-                    Map<String, dynamic> myData = document.data()! as Map<String, dynamic>;
-                    return Text(myData['postID']);
-                  }).toList(),
-                ),
-              );
-            },
-          );
+          ) ;
         },
       )
 
