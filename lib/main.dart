@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_booking/screens/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -10,7 +11,18 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const GetMaterialApp(home: MyApp()));
+  runApp( GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme:  _buildTheme(Brightness.light),
+      home: const MyApp())
+  );
+}
+ThemeData _buildTheme(brightness) {
+  var baseTheme = ThemeData(brightness: brightness);
+
+  return baseTheme.copyWith(
+    textTheme: GoogleFonts.poppinsTextTheme(baseTheme.textTheme),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -23,10 +35,7 @@ class MyApp extends StatelessWidget {
 
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme:  _buildTheme(Brightness.light),
       home: const SplashScreen(),
     );
   }

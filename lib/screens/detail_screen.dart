@@ -71,7 +71,7 @@ class _DetailScreenState extends State<DetailScreen> {
     setState(() {
       isLoading = true;
     });
-    await posts.doc(widget.userId).collection(widget.postId).doc(FirebaseAuth.instance.currentUser!.uid).set({
+    await posts.add({
       'createdAt': Timestamp.now().toDate(),
       'userId': FirebaseAuth.instance.currentUser!.uid,
       'postUserID': widget.userId,
