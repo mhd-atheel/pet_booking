@@ -543,7 +543,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.grey,
               ),
             ),
-            StreamBuilder(
+            tabIndex == 0? StreamBuilder(
               stream:
                    FirebaseFirestore.instance
                   .collection('posts').where('userId', isEqualTo:FirebaseAuth.instance.currentUser!.uid).snapshots(),
@@ -699,6 +699,121 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 const SizedBox(height: 15,),
 
                                 const SizedBox(height: 15,),
+                              ],
+                            ),
+
+
+                          );
+                        },
+                      );
+                    }
+                );
+
+
+              },
+            ):
+            StreamBuilder(
+              stream:
+              FirebaseFirestore.instance
+                  .collection('feedbacks').where('userId', isEqualTo:FirebaseAuth.instance.currentUser!.uid).snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Something went wrong'));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if(snapshot.data!.docs.isEmpty){
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20,),
+                      Image.asset('assets/images/logo.png',
+                        height: 50,
+                      ),
+                      const Center(child: Text('Not Found')),
+                    ],
+                  );
+                }
+                final orders = snapshot.data!.docs;
+
+                return ListView.builder(
+                    itemCount: orders.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context,index){
+                      return StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance.collection('users').doc(orders[index]['postUserID']).snapshots(),
+                        builder: (context, userSnapshot) {
+                          if (userSnapshot.connectionState == ConnectionState.waiting) {
+                            return Container();
+                          }
+
+                          final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+
+                          return  Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(color: const Color(0xff0E1041)),
+                                borderRadius: BorderRadius.circular(10)),
+                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title:Text(userData['name']),
+                                  subtitle: Text(orders[index]['createdAt'].toDate().toString().substring(0,10)),
+                                  leading: userData['image'] == ''?CircleAvatar(
+                                      radius: 22,
+                                      backgroundColor: Colors.orange,
+                                      child: Text(
+                                        userData['name'].toString().substring(0,1).toUpperCase(),
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold
+                                        ),
+                                      ))
+                                      :  ClipRRect(
+                                    borderRadius: BorderRadius.circular(22), // Image border
+                                    child: SizedBox.fromSize(
+                                      size: const Size.fromRadius(22), // Image radius
+                                      child: CachedNetworkImage(
+                                        imageUrl:userData['image'],
+                                        imageBuilder: (context, imageProvider) => Container(
+                                          height: 80,
+                                          width: 110,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: imageProvider,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        placeholder: (context, url) => const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                        errorWidget: (context, url, error) => const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  ),
+
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 15.0,vertical: 5),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(orders[index]['feedback'],style: const TextStyle(
+                                            fontWeight: FontWeight.w400,color: Colors.black,fontFamily: 'Prompt'
+                                        ),),
+                                      ),
+
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 15,),
+
                               ],
                             ),
 

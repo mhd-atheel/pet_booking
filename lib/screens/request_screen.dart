@@ -63,7 +63,8 @@ class RequestScreen extends StatelessWidget {
                         contact: userData['contact'],
                         image: userData['image'],
                         status: orders[index]['request'],
-                        docId: orders[index].id
+                        docId: orders[index].id,
+                        postUserID:orders[index]['postUserID'] ,
                     ) ;
                   },
                 );

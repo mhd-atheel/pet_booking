@@ -519,6 +519,7 @@ class _CreatePetPostState extends State<CreatePetPost> {
                                     Icon(
                                       Icons.image,
                                       size: 50,
+
                                       color: Colors.white,
                                     ),
                                     Text(
