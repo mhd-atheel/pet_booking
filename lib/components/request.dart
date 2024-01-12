@@ -1,5 +1,7 @@
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Request extends StatefulWidget {
@@ -8,15 +10,15 @@ class Request extends StatefulWidget {
   final String image;
   final String status;
   final String docId;
-
+  final String postUserID;
   const Request(
       {super.key,
       required this.name,
       required this.contact,
       required this.image,
       required this.status,
-      required this.docId
-
+      required this.docId,
+        required this.postUserID
       });
 
   @override
@@ -27,7 +29,10 @@ class _RequestState extends State<Request> {
 
   bool isAcceptLoading = false;
   bool isCancelLoading = false;
-
+  bool isFeedLoading = false;
+  bool isOpen = false;
+  final feedController = TextEditingController();
+  CollectionReference feedback = FirebaseFirestore.instance.collection('feedbacks');
 
   Future<void> updateAcceptRequest() async {
     setState(() {
@@ -53,6 +58,28 @@ class _RequestState extends State<Request> {
       setState(() {
         isCancelLoading = false;
       });
+    });
+  }
+
+  Future<void> createFeedback(postUserID) async {
+    setState(() {
+      isFeedLoading = true;
+    });
+    await feedback.add({
+      'createdAt': Timestamp.now().toDate(),
+      'userId': FirebaseAuth.instance.currentUser!.uid,
+      'postUserID': postUserID,
+      'feedback': feedController.text,
+    }).then((value) => {
+      setState(() {
+        isFeedLoading = false;
+        isOpen =false;
+      }),
+      AnimatedSnackBar.material(
+        "Feedback Send SuccessFully",
+        type: AnimatedSnackBarType.success,
+      ).show(context),
+      print("Request Created Successfully")
     });
   }
 
@@ -104,6 +131,22 @@ class _RequestState extends State<Request> {
                 ),
               ),
             ),
+            trailing: widget.status != 'pending'? IconButton(
+              onPressed: () {
+                setState(() {
+                  isOpen = !isOpen;
+                });
+              },
+              icon: Icon(
+                isOpen == false ?
+                Icons.keyboard_arrow_down_outlined :
+                Icons.keyboard_arrow_up_outlined
+                ,
+                size: 30,
+              ),
+
+            ):Container(),
+
           ),
           widget.status == 'pending'
               ? Row(
@@ -170,41 +213,163 @@ class _RequestState extends State<Request> {
                     ),
                   ],
                 )
-              : Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-                  child: Container(
-                    height: 40,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(5)),
-                    child: const Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Accepted",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 15),
+              : Column(
+                children: [
+                  if(isOpen ==true)
+                    Column(
+                      children: [
+                        const Padding(
+                          padding:
+                          EdgeInsets.only(left: 15.0, top: 10, right: 15),
+                          child: Row(
+                            children: [
+                              Text("Add Your Feedback"),
+                            ],
                           ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 8.0),
-                            child: Icon(
-                              Icons.done,
-                              size: 20,
-                              color: Colors.white,
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 15.0, top: 5, right: 15),
+                          child: Container(
+                            height: 50,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                              // 0xfff2f2f2  - like a gray
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(color: Colors.black54)),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20, top: 0),
+                              child: TextFormField(
+                                  controller: feedController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'residential address',
+                                    labelStyle: TextStyle(color: Colors.grey),
+                                    border: InputBorder.none,
+                                  )),
                             ),
-                          )
-                        ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  SizedBox(
+                    height: isOpen ==false ?0: 10,
+                  ),
+                  if(isOpen ==false)
+                    Padding(
+                      padding:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                      child: Container(
+                        height: 40,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(5)),
+                        child: const Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Accepted",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 15),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 8.0),
+                                child: Icon(
+                                  Icons.done,
+                                  size: 20,
+                                  color: Colors.white,
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                     ),
+                  const SizedBox(
+                    height: 10,
                   ),
-                ),
-          const SizedBox(
-            height: 15,
+                  if(isOpen ==true)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GestureDetector(
+                          onTap: (){
+                            if(feedController.text.isNotEmpty){
+                              createFeedback(
+                                  widget.postUserID
+                              );
+                            }else {
+                              setState(() {
+                                AnimatedSnackBar.material(
+                                  "Please Add Feedback",
+                                  type: AnimatedSnackBarType.error,
+                                ).show(context);
+                              });
+                            }
+                          },
+                          child: Container(
+                            height: 40,
+                            width: MediaQuery.of(context).size.width/2.8,
+                            decoration: BoxDecoration(
+                                color: Colors.orange,
+                                borderRadius: BorderRadius.circular(5)),
+                            child:  Center(
+                              child: isFeedLoading ==false ? const Text(
+                                "Send",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 15),
+                              ):const SizedBox(
+                                height: 15.0,
+                                width: 15.0,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: (){
+                            setState(() {
+                              isOpen = false;
+                            });
+                          },
+                          child: Container(
+                            height: 40,
+                            width: MediaQuery.of(context).size.width/2.8,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(color: Colors.orange)
+                            ),
+                            child: const Center(
+                              child: Text(
+                                "Cancel",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange,
+                                    fontSize: 15),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+
+                ],
+              ),
+           SizedBox(
+            height:  isOpen ==false ?0:15,
           ),
         ],
       ),
