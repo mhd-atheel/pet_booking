@@ -88,6 +88,7 @@ class _RequestState extends State<Request> {
   @override
   Widget build(BuildContext context) {
     return Container(
+
       decoration: BoxDecoration(
           border: Border.all(color: const Color(0xff0E1041)),
           borderRadius: BorderRadius.circular(10)),
@@ -145,74 +146,80 @@ class _RequestState extends State<Request> {
                 size: 30,
               ),
 
-            ):Container(),
+            ):IconButton(onPressed: (){}, icon:Icon( Icons.add,color: Colors.transparent,)),
 
           ),
           widget.status == 'pending'
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        print("Accepted");
-                        updateAcceptRequest();
-                      },
-                      child: Container(
-                        height: 40,
-                        width: MediaQuery.of(context).size.width / 2.5,
-                        decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(5)),
-                        child: Center(
-                          child: isAcceptLoading ==false ? const Text(
-                            "Accept",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 15),
-                          ):const SizedBox(
-                            height: 15.0,
-                            width: 15.0,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        deleteAcceptRequest();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(),
-                        child: Container(
-                          height: 40,
-                          width: MediaQuery.of(context).size.width / 2.5,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(color: Colors.orange)),
-                          child:  Center(
-                            child: isCancelLoading ==false ? const Text(
-                              "Cancel",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange,
-                                  fontSize: 15),
-                            ):const SizedBox(
-                              height: 15.0,
-                              width: 15.0,
-                              child: CircularProgressIndicator(
+              ? Column(
+                children: [
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            print("Accepted");
+                            updateAcceptRequest();
+                          },
+                          child: Container(
+                            height: 40,
+                            width: MediaQuery.of(context).size.width / 2.5,
+                            decoration: BoxDecoration(
                                 color: Colors.orange,
+                                borderRadius: BorderRadius.circular(5)),
+                            child: Center(
+                              child: isAcceptLoading ==false ? const Text(
+                                "Accept",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 15),
+                              ):const SizedBox(
+                                height: 15.0,
+                                width: 15.0,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                        GestureDetector(
+                          onTap: () {
+                            deleteAcceptRequest();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(),
+                            child: Container(
+                              height: 40,
+                              width: MediaQuery.of(context).size.width / 2.5,
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(5),
+                                  border: Border.all(color: Colors.orange)),
+                              child:  Center(
+                                child: isCancelLoading ==false ? const Text(
+                                  "Cancel",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange,
+                                      fontSize: 15),
+                                ):const SizedBox(
+                                  height: 15.0,
+                                  width: 15.0,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                )
+                  const SizedBox(height: 15,)
+                ],
+
+              )
               : Column(
                 children: [
                   if(isOpen ==true)
@@ -246,7 +253,7 @@ class _RequestState extends State<Request> {
                               child: TextFormField(
                                   controller: feedController,
                                   decoration: const InputDecoration(
-                                    hintText: 'residential address',
+                                    hintText: '...',
                                     labelStyle: TextStyle(color: Colors.grey),
                                     border: InputBorder.none,
                                   )),

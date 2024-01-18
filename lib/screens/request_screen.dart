@@ -15,67 +15,60 @@ class RequestScreen extends StatelessWidget {
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
-      body:  SingleChildScrollView(
-        child: Column(
-          children: [
-        StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('requests').where('postUserID', isEqualTo:FirebaseAuth.instance.currentUser!.uid).snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text('Something went wrong'));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if(snapshot.data!.docs.isEmpty){
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height/3,
-                ),
-                Image.asset('assets/images/logo.png',
-                  height: 50,
-                ),
-                const Center(child: Text('Not Found')),
-              ],
-            );
-          }
+      body:  StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('requests').where('postUserID', isEqualTo:FirebaseAuth.instance.currentUser!.uid).snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return const Center(child: Text('Something went wrong'));
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if(snapshot.data!.docs.isEmpty){
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height/3,
+              ),
+              Image.asset('assets/images/logo.png',
+                height: 50,
+              ),
+              const Center(child: Text('Not Found')),
+            ],
+          );
+        }
 
-          // Check if the data is not null before casting
-          final orders = snapshot.data!.docs;
+        // Check if the data is not null before casting
+        final orders = snapshot.data!.docs;
 
-          return  ListView.builder(
-              itemCount: orders.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context,index){
-                return StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance.collection('users').doc(orders[index]['userId']).snapshots(),
-                  builder: (context, userSnapshot) {
-                    if (userSnapshot.connectionState == ConnectionState.waiting) {
-                      return Container();
-                    }
-                    final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+        return  ListView.builder(
+            itemCount: orders.length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context,index){
+              return StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance.collection('users').doc(orders[index]['userId']).snapshots(),
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return Container();
+                  }
+                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
 
-                    return Request(
-                        name: userData['name'],
-                        contact: userData['contact'],
-                        image: userData['image'],
-                        status: orders[index]['request'],
-                        docId: orders[index].id,
-                        postUserID:orders[index]['postUserID'] ,
-                    ) ;
-                  },
-                );
-              }
-          ) ;
-        },
-      )
-
-      ],
-        ),
-      ),
+                  return Request(
+                      name: userData['name'],
+                      contact: userData['contact'],
+                      image: userData['image'],
+                      status: orders[index]['request'],
+                      docId: orders[index].id,
+                      postUserID:orders[index]['userId'] ,
+                  ) ;
+                },
+              );
+            }
+        ) ;
+      },
+            ),
     );
   }
 }
